@@ -17,6 +17,11 @@ class Node
     private $inner = "";
 
     /**
+     * @var TagMeta|null
+     */
+    private $tagMeta;
+
+    /**
      * @return array
      */
     public function getAttributes(): array
@@ -51,4 +56,33 @@ class Node
         $this->inner = $inner;
         return $this;
     }
+
+    /**
+     * @return TagMeta|null
+     */
+    public function getTagMeta(): ?TagMeta
+    {
+        return $this->tagMeta;
+    }
+
+    /**
+     * @param TagMeta|null $tagMeta
+     * @return Node
+     */
+    public function setTagMeta(?TagMeta $tagMeta): Node
+    {
+        $this->tagMeta = $tagMeta;
+        return $this;
+    }
+
+    public function __toString()
+    {
+        if (array_key_exists("name", $this->attributes)) {
+            return $this->attributes["name"] . " node";
+        }
+
+        return "Unnamed node";
+    }
+
+
 }

@@ -23,36 +23,48 @@ class Parser
     private $content = "";
 
     /**
-     * @var array
+     * @var TagHandlerFactory
      */
-    private $tagHandlers;
+    private $tagHandlerFactory;
 
-    public function __construct(Config $config, $tagHandlers = [])
+    public function __construct(Config $config, TagHandlerFactory $tagHandlerFactory)
     {
         $this->config = $config;
-        $this->tagHandlers = $tagHandlers;
+        $this->tagHandlerFactory = $tagHandlerFactory;
     }
 
+    /**
+     * @param $content
+     * @return ParseResult
+     */
     public function parse($content)
     {
         $this->content = $content;
         $result = new ParseResult();
         $mappedTags = $this->mapTags();
 
-        foreach ($mappedTags as $tag) {
+        /*
+         * This makes several passes through the content in order to keep string positions in line...
+         * It seems like it might be more performant to update string positions without another loop through the content.
+         */
+        while(count($mappedTags) > 0) {
+            $tag = $mappedTags[0];
             if (count($tag->getErrors()) > 0) {
                 $result->addError("Error: tag at " . $tag->getStartPosition() . "has an error: " . implode(", ", $tag->getErrors()));
+                return $result;
             }
-        }
+            $node = $this->makeTagNode($tag);
+            $handler = $this->tagHandlerFactory->handlerFor($node);
+            $output = $handler->process($node);
+            $before = substr($this->content, 0, $tag->getStartPosition());
+            $after = substr($this->content, $tag->getEndPosition() + strlen($tag->getEndText()));
+            $this->content = $before . $output . $after;
 
-        if (count($result->getErrors()) > 0) {
-            return $result;
+            $mappedTags = $this->mapTags();
         }
+        $result->setPayload($this->content);
 
-        foreach ($mappedTags as $tag) {
-            $tagProps = $this->getTagProperties($tag);
-            var_dump($tagProps);
-        }
+        return $result;
     }
 
     /**
@@ -141,7 +153,7 @@ class Parser
      * @param TagMeta $tag
      * @return Node
      */
-    private function getTagProperties($tag) {
+    private function makeTagNode($tag) {
         $openLabelLength = $this->config->getOpenLabelLength();
         $attrBlock = "";
         $inner = "";
@@ -167,6 +179,7 @@ class Parser
         }
 
         return (new Node)
+            ->setTagMeta($tag)
             ->setAttributes($attributes)
             ->setInner($inner);
     }

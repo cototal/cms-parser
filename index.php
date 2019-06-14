@@ -23,7 +23,43 @@ $sample = <<<SAMPLE
 </div>
 SAMPLE;
 
-$config = new \Cototal\CmsParser\Model\Config();
-$parser = new \Cototal\CmsParser\Service\Parser($config);
+class SampleAccessHandler implements \Cototal\CmsParser\Iface\ITagHandler {
+    public function process(\Cototal\CmsParser\Model\Node $node): string
+    {
+        return "<div class='access'>" . $node->getInner() . "</div>";
+    }
 
-$parser->parse($sample);
+    public function handles(\Cototal\CmsParser\Model\Node $node): bool
+    {
+        if (array_key_exists("name", $node->getAttributes()) && $node->getAttributes()["name"] === "access") {
+            return true;
+        }
+        return false;
+    }
+}
+
+class SampleDocumentHandler implements \Cototal\CmsParser\Iface\ITagHandler {
+    public function process(\Cototal\CmsParser\Model\Node $node): string
+    {
+        $label = $node->getInner();
+        if (empty($label)) {
+            $label = "Document Name";
+        }
+        return "<a href='#'>$label</a>";
+    }
+
+    public function handles(\Cototal\CmsParser\Model\Node $node): bool
+    {
+        if (array_key_exists("name", $node->getAttributes()) && $node->getAttributes()["name"] === "document") {
+            return true;
+        }
+        return false;
+    }
+}
+
+$config = new \Cototal\CmsParser\Model\Config();
+$factory = new \Cototal\CmsParser\Service\TagHandlerFactory([new SampleDocumentHandler()]);
+$factory->addTagHandler(new SampleAccessHandler());
+$parser = new \Cototal\CmsParser\Service\Parser($config, $factory);
+
+var_dump($parser->parse($sample));
