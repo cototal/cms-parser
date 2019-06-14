@@ -6,6 +6,8 @@ namespace Cototal\CmsParser\Model;
 
 class Config
 {
+    const TAG_OPEN = "open";
+    const TAG_CLOSE = "close";
     /**
      * @var string
      */
@@ -47,9 +49,27 @@ class Config
     {
         $tagName = $this->getTagName();
         return [
-            "[$tagName" => "open",
-            "[/$tagName]" => "close",
-            "/]" => "close"
+            "[$tagName" => self::TAG_OPEN,
+            "[/$tagName]" => self::TAG_CLOSE,
+            "/]" => self::TAG_CLOSE
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function getMatcher(): string
+    {
+        $tagName = $this->getTagName();
+        return "/(\[$tagName|\[\/$tagName\]|\/\])/i";
+    }
+
+    /**
+     * @return int
+     */
+    public function getOpenLabelLength(): int
+    {
+        $tagName = $this->getTagName();
+        return strlen("[$tagName ");
     }
 }
