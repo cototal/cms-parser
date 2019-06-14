@@ -1,0 +1,8 @@
+{
+    "name": "polysphere/phpxml",
+    "description": "Testing out XML handling in PHP.",
+    "type": "project",
+    "require": {
+        "ext-simplexml": "*"
+    }
+}
