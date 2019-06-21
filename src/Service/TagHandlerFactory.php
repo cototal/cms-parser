@@ -14,8 +14,9 @@ class TagHandlerFactory
      */
     private $tagHandlers;
 
-    public function __construct(array $tagHandlers)
+    public function __construct($tagHandlers)
     {
+        $tagHandlers = $this->validateTagHandlers($tagHandlers);
         for ($idx = 0; $idx < count($tagHandlers); $idx++) {
             $handler = $tagHandlers[$idx];
             if (!$handler instanceof ITagHandler) {
@@ -44,5 +45,18 @@ class TagHandlerFactory
     public function addTagHandler(ITagHandler $tagHandler)
     {
         $this->tagHandlers[] = $tagHandler;
+    }
+
+    private function validateTagHandlers($tagHandlers)
+    {
+        if (is_array($tagHandlers)) {
+            return $tagHandlers;
+        }
+
+        if (is_object($tagHandlers) && $tagHandlers instanceof \Traversable) {
+            return iterator_to_array($tagHandlers);
+        }
+
+        throw new \InvalidArgumentException("tagHandlers must be an array or Traversable");
     }
 }

@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   web:
-    container_name: phpxml
+    container_name: cmsp
     image: registry.gitlab.com/ginblades/docker-php-apache:65e3a96-dev
     working_dir: /app
     volumes:

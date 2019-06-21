@@ -75,14 +75,17 @@ class Node
         return $this;
     }
 
-    public function __toString()
+    public function getName()
     {
         if (array_key_exists("name", $this->attributes)) {
-            return $this->attributes["name"] . " node";
+            return $this->attributes["name"];
         }
 
-        return "Unnamed node";
+        return "unnamed";
     }
 
-
+    public function __toString()
+    {
+        return $this->getName() . " node";
+    }
 }
